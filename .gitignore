@@ -1,0 +1,8 @@
+.DS_Store
+*.o
+*.app
+*.zip
+*.log
+build/
+DerivedData/
+.build/
