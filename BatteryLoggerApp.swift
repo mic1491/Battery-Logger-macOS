@@ -4818,6 +4818,26 @@ struct FloatingBuddyView: View {
         }
     }
 
+    /// Infinite pulse animations are the dominant CPU cost (~30% on Intel); run them only while charging.
+    private func updateBuddyPulses(charging: Bool) {
+        isChargingPulsing = charging
+        var still = Transaction()
+        still.disablesAnimations = true
+        withTransaction(still) {
+            reactorPulse = false
+            chargePulse = false
+        }
+        guard charging else { return }
+        DispatchQueue.main.async {
+            withAnimation(Animation.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+                reactorPulse = true
+            }
+            withAnimation(Animation.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                chargePulse = true
+            }
+        }
+    }
+
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
             if isBubbleVisible {
@@ -4828,15 +4848,10 @@ struct FloatingBuddyView: View {
         .padding(4)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         .onAppear {
-            isChargingPulsing = true
-            withAnimation(Animation.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
-                reactorPulse = true
-            }
-            withAnimation(Animation.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
-                chargePulse = true
-            }
+            updateBuddyPulses(charging: isCharging)
         }
         .onChange(of: isCharging) { newIsCharging in
+            updateBuddyPulses(charging: newIsCharging)
             if !newIsCharging {
                 withAnimation(.spring(response: 0.22, dampingFraction: 0.45)) {
                     unplugBounceScale = 1.22
@@ -5401,8 +5416,15 @@ struct ClassicSkinView: View {
 
     private func startBreathing() {
         isBreathing = false
+        // Power saving: infinite 60fps animations only while charging; static glow otherwise.
+        guard isCharging else {
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) { isBreathing = true }
+            return
+        }
         DispatchQueue.main.async {
-            withAnimation(Animation.easeInOut(duration: isCharging ? 0.85 : 2.0).repeatForever(autoreverses: true)) {
+            withAnimation(Animation.easeInOut(duration: 0.85).repeatForever(autoreverses: true)) {
                 isBreathing = true
             }
         }
@@ -5457,8 +5479,15 @@ struct PixelMonsterSkinView: View {
 
     private func startBreathing() {
         isBreathing = false
+        // Power saving: infinite 60fps animations only while charging; static glow otherwise.
+        guard isCharging else {
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) { isBreathing = true }
+            return
+        }
         DispatchQueue.main.async {
-            withAnimation(Animation.easeInOut(duration: isCharging ? 0.85 : 2.0).repeatForever(autoreverses: true)) {
+            withAnimation(Animation.easeInOut(duration: 0.85).repeatForever(autoreverses: true)) {
                 isBreathing = true
             }
         }
@@ -5511,11 +5540,18 @@ struct CyberCoreSkinView: View {
 
     private func startBreathing() {
         isBreathing = false
+        // Power saving: infinite 60fps animations only while charging; static glow otherwise.
+        guard isCharging else {
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) { isBreathing = true }
+            return
+        }
         DispatchQueue.main.async {
-            withAnimation(Animation.easeInOut(duration: isCharging ? 0.85 : 2.0).repeatForever(autoreverses: true)) {
+            withAnimation(Animation.easeInOut(duration: 0.85).repeatForever(autoreverses: true)) {
                 isBreathing = true
             }
-            withAnimation(Animation.linear(duration: isCharging ? 4.0 : 12.0).repeatForever(autoreverses: false)) {
+            withAnimation(Animation.linear(duration: 4.0).repeatForever(autoreverses: false)) {
                 isRotating = true
             }
         }
@@ -5675,8 +5711,15 @@ struct ArcReactorSkinView: View {
 
     private func startBreathing() {
         isBreathing = false
+        // Power saving: infinite 60fps animations only while charging; static glow otherwise.
+        guard isCharging else {
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) { isBreathing = true }
+            return
+        }
         DispatchQueue.main.async {
-            withAnimation(Animation.easeInOut(duration: isCharging ? 0.85 : 2.0).repeatForever(autoreverses: true)) {
+            withAnimation(Animation.easeInOut(duration: 0.85).repeatForever(autoreverses: true)) {
                 isBreathing = true
             }
         }
@@ -5817,8 +5860,15 @@ struct CaptainShieldSkinView: View {
 
     private func startBreathing() {
         isBreathing = false
+        // Power saving: infinite 60fps animations only while charging; static glow otherwise.
+        guard isCharging else {
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) { isBreathing = true }
+            return
+        }
         DispatchQueue.main.async {
-            withAnimation(Animation.easeInOut(duration: isCharging ? 0.85 : 2.0).repeatForever(autoreverses: true)) {
+            withAnimation(Animation.easeInOut(duration: 0.85).repeatForever(autoreverses: true)) {
                 isBreathing = true
             }
         }
