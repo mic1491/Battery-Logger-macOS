@@ -232,6 +232,75 @@ final class CalendarOutingPredictor {
     }
 }
 
+// MARK: - GitHub Auto Update Checker
+struct GitHubReleaseInfo: Decodable {
+    let tagName: String
+    let htmlUrl: String
+    let name: String?
+    let body: String?
+
+    enum CodingKeys: String, CodingKey {
+        case tagName = "tag_name"
+        case htmlUrl = "html_url"
+        case name
+        case body
+    }
+}
+
+@MainActor
+final class UpdateChecker: ObservableObject {
+    static let shared = UpdateChecker()
+
+    @Published var latestVersion: String? = nil
+    @Published var releaseURL: URL? = nil
+    @Published var hasUpdate: Bool = false
+    @Published var isChecking: Bool = false
+    @Published var statusMessage: String? = nil
+
+    let currentVersion = "v1.4.0"
+
+    func checkForUpdates(silent: Bool = true) {
+        guard !isChecking else { return }
+        isChecking = true
+        if !silent { statusMessage = "正在連線 GitHub 檢查更新…" }
+
+        guard let url = URL(string: "https://api.github.com/repos/mic1491/Battery-Logger-macOS/releases/latest") else {
+            isChecking = false
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue("application/vnd.github.v3+json", forHTTPHeaderField: "Accept")
+        request.timeoutInterval = 8.0
+
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            Task { @MainActor in
+                guard let self = self else { return }
+                self.isChecking = false
+                guard let data = data, error == nil,
+                      let release = try? JSONDecoder().decode(GitHubReleaseInfo.self, from: data) else {
+                    if !silent { self.statusMessage = "暫時無法取得 GitHub 更新資訊" }
+                    return
+                }
+
+                let remoteTag = release.tagName.trimmingCharacters(in: .whitespacesAndNewlines)
+                let cleanRemote = remoteTag.replacingOccurrences(of: "v", with: "")
+                let cleanCurrent = self.currentVersion.replacingOccurrences(of: "v", with: "")
+
+                if cleanRemote.compare(cleanCurrent, options: .numeric) == .orderedDescending {
+                    self.latestVersion = remoteTag
+                    self.releaseURL = URL(string: release.htmlUrl)
+                    self.hasUpdate = true
+                    if !silent { self.statusMessage = "發現新版本 \(remoteTag)！" }
+                } else {
+                    self.hasUpdate = false
+                    if !silent { self.statusMessage = "已是最新版本 (\(self.currentVersion))" }
+                }
+            }
+        }.resume()
+    }
+}
+
 /// Google Gemini AI integration service for battery diagnosis and interactive assistant.
 @MainActor
 final class GeminiService: ObservableObject {
@@ -976,6 +1045,7 @@ final class BatteryModel: ObservableObject {
     @Published var boostModeActive = false
     @Published var thermalThrottleActive = false
     @Published var smartStatusTip: String?
+    @Published var isAppleSilicon: Bool = false
 
     var displayChargeLimit: Int {
         return userTargetLimit
@@ -1172,6 +1242,18 @@ final class BatteryModel: ObservableObject {
         self.isLaunchDaemonInstalled = FileManager.default.fileExists(atPath: "/Library/LaunchDaemons/local.codex.batterylogger.helper.plist")
         self.isPrivilegedHelperInstalled = FileManager.default.fileExists(atPath: "/usr/local/bin/smc-battery-tool")
         self.autoLowPowerModeEnabled = UserDefaults.standard.object(forKey: "autoLowPowerModeEnabled") as? Bool ?? true
+
+        #if arch(arm64)
+        self.isAppleSilicon = true
+        #else
+        var isArm64 = false
+        var size = MemoryLayout<Int>.size
+        var val: Int = 0
+        if sysctlbyname("hw.optional.arm64", &val, &size, nil, 0) == 0 && val == 1 {
+            isArm64 = true
+        }
+        self.isAppleSilicon = isArm64
+        #endif
 
         let savedTarget = UserDefaults.standard.integer(forKey: "userTargetLimit")
         self.userTargetLimit = (savedTarget >= 70 && savedTarget <= 100) ? savedTarget : 85
@@ -2263,6 +2345,11 @@ final class BatteryModel: ObservableObject {
     }
 
     func setChargeLimit(_ newLimit: Int) {
+        if isAppleSilicon {
+            self.limitMessage = "Apple Silicon 機型無 Intel SMC (BCLM) 限充暫存器，建議使用系統內建最佳化充電。"
+            self.errorMessage = "Apple Silicon 機型不支援 Intel SMC (BCLM) 限充暫存器。"
+            return
+        }
         if newLimit >= 60 {
             userTargetLimit = newLimit
             UserDefaults.standard.set(newLimit, forKey: "userTargetLimit")
@@ -2842,6 +2929,7 @@ final class BatteryLoggerAppDelegate: NSObject, NSApplicationDelegate, NSWindowD
                 self.updateDockStatus()
             }
         }
+        UpdateChecker.shared.checkForUpdates(silent: true)
     }
 
     @objc func updateDockStatus() {
@@ -3255,6 +3343,26 @@ struct DashboardView: View {
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(Color.blue.opacity(0.12), in: Capsule())
+
+                    if UpdateChecker.shared.hasUpdate, let newVer = UpdateChecker.shared.latestVersion {
+                        Button {
+                            if let url = UpdateChecker.shared.releaseURL {
+                                NSWorkspace.shared.open(url)
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.up.circle.fill")
+                                Text("有新版 \(newVer)")
+                            }
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(Color.orange)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 2)
+                            .background(Color.orange.opacity(0.16), in: Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .help("發現新版本，點擊前往 GitHub 下載更新")
+                    }
                 }
                 HStack(spacing: 6) {
                     Text("即時電化學監測 ＋ 智慧保養").font(.caption).foregroundStyle(Color.secondary)
@@ -3816,6 +3924,20 @@ struct ChargeLimiterCard: View {
                         ProgressView()
                             .controlSize(.small)
                     }
+                }
+
+                if model.isAppleSilicon {
+                    HStack(spacing: 6) {
+                        Image(systemName: "apple.logo")
+                            .font(.caption)
+                            .foregroundStyle(Color.secondary)
+                        Text("此 Mac 為 Apple Silicon 架構。硬體 SMC BCLM 限充為 Intel 專屬；在 Apple Silicon 上建議搭配 macOS「最佳化電池充電」進行日常保養。")
+                            .font(.caption2)
+                            .foregroundStyle(Color.secondary)
+                    }
+                    .padding(6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
                 }
 
                 HStack(spacing: 12) {
@@ -6392,6 +6514,44 @@ struct PreferencesSheet: View {
                 Text("• 雙擊精靈：360 度特技翻轉，隨機揭開電芯壓差、累計陪伴時間或彩蛋！\n• 甩動物理：拖曳快速甩動時精靈會短暫暈眩（😵‍💫）。\n• 智慧情境：自動辨識快充瓦數、放電暴增警報、90分鐘久坐喝水提醒（☕️）與深夜節律（💤）。")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
+            }
+            .padding(4)
+        }
+
+        // 軟體版本與 GitHub 更新
+        GroupBox("軟體版本與 GitHub 更新") {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("目前版本：v1.40 (Build 40) · \(model.isAppleSilicon ? "Apple Silicon (ARM64)" : "Intel (x86_64)")")
+                            .font(.subheadline.bold())
+                        if let msg = UpdateChecker.shared.statusMessage {
+                            Text(msg)
+                                .font(.caption)
+                                .foregroundStyle(UpdateChecker.shared.hasUpdate ? Color.orange : Color.secondary)
+                        } else {
+                            Text("開源專案：github.com/mic1491/Battery-Logger-macOS")
+                                .font(.caption2)
+                                .foregroundStyle(Color.secondary)
+                        }
+                    }
+                    Spacer()
+                    if UpdateChecker.shared.isChecking {
+                        ProgressView().controlSize(.small)
+                    } else if UpdateChecker.shared.hasUpdate, let url = UpdateChecker.shared.releaseURL {
+                        Button("下載新版") {
+                            NSWorkspace.shared.open(url)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Color.orange)
+                        .controlSize(.small)
+                    } else {
+                        Button("檢查更新") {
+                            UpdateChecker.shared.checkForUpdates(silent: false)
+                        }
+                        .controlSize(.small)
+                    }
+                }
             }
             .padding(4)
         }

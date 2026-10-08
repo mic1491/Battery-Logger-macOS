@@ -6,3 +6,5 @@
 build/
 DerivedData/
 .build/
+BatteryLogger.py
+電池耗電比較說明.txt

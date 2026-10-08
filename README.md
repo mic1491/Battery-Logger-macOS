@@ -45,22 +45,53 @@
 
 ---
 
-## 🚀 Building from Source / 編譯方式
+---
 
-### Requirements
-- macOS 13.0 or later (macOS 14+ recommended for Desktop Widgets)
-- Xcode Command Line Tools (`xcode-select --install`)
+## 📦 Quick Install / 快速下載安裝
 
-### One-Click Build
-Clone the repository and run:
+### 方式一：直接下載發布版本（推薦）
+1. 至 [Releases 頁面](https://github.com/mic1491/Battery-Logger-macOS/releases/latest) 下載 `Battery_Logger_macOS.zip`。
+2. 解壓縮後將 `Battery Logger.app` 拖移至「應用程式」（`/Applications`）資料夾。
+3. **⚠️ 解決 macOS「已損毀」或「無法打開」提示（Gatekeeper 隔離屬性）**：  
+   由於本專案為獨立開源軟體，未購買 Apple 年費開發者憑證。若首次開啟時 macOS 提示無法打開，請開啟「終端機」（Terminal）執行此指令即可一鍵解除阻擋：
+   ```bash
+   xattr -cr "/Applications/Battery Logger.app"
+   ```
+
+---
+
+## 💻 Hardware Compatibility / 硬體相容性對照表
+
+| 功能特色 | Intel Mac (2016–2020) | Apple Silicon (M1–M4) | 說明 |
+| :--- | :---: | :---: | :--- |
+| **即時充放電瓦數 (+W / -W)** | ✅ 支援 | ✅ 支援 | 原生 IOKit 即時電化學功率計算 |
+| **電池健康度 (SOH) 與循環** | ✅ 支援 | ✅ 支援 | 讀取 `AppleSmartBattery` 真實容量 |
+| **原生毛玻璃 UI & 儀表板** | ✅ 支援 | ✅ 支援 | 原生 SwiftUI + AppKit Popover |
+| **macOS 桌面小組件 (Widgets)** | ✅ 支援 | ✅ 支援 | macOS 14+ WidgetKit 24 小時趨勢 |
+| **休眠零洩漏保護 (Sleep Guard)** | ✅ 支援 | ✅ 支援 | 100% In-Memory C API，根除崩潰 |
+| **低耗電模式自動切換 (LPM)** | ✅ 支援 | ✅ 支援 | 電量低於 20% 自動開啟，接電自動關閉 |
+| **桌面動態精靈 (Desktop Buddy)** | ✅ 支援 | ✅ 支援 | 未接電源自動改為靜態光圈省電 |
+| **80% 硬體限充 (SMC Bypass)** | ✅ 支援 (SMC `BCLM`) | ⚠️ 原生受限 | Apple Silicon 無 `BCLM` 暫存器，建議使用 macOS 原生最佳化充電 |
+| **CPU 核心即時溫度** | ✅ 支援 (SMC `TC0P`) | ℹ️ 電池溫度支援 | Apple Silicon 採用統一記憶體架構與 HID 感測器 |
+
+---
+
+## 🚀 Building from Source / 從原始碼編譯
+
+### 環境需求
+- macOS 13.0 或更新版本（桌面小組件建議 macOS 14+）
+- Xcode Command Line Tools（若無請於終端機執行 `xcode-select --install`）
+
+### 一鍵編譯與安裝
+複製本倉庫並執行編譯腳本：
 ```bash
-git clone https://github.com/<YOUR_USERNAME>/Battery-Logger-macOS.git
+git clone https://github.com/mic1491/Battery-Logger-macOS.git
 cd Battery-Logger-macOS
 ./Build\ Battery\ Logger.command
 ```
-The compiled universal `.app` will automatically be installed to `/Applications/Battery Logger.app` and launched.
+腳本將自動編譯 Universal Binary（支援 x86_64 與 arm64 雙架構）並安裝至 `/Applications/Battery Logger.app`。
 
 ---
 
 ## 📄 License
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
