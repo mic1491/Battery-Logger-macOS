@@ -257,7 +257,7 @@ final class UpdateChecker: ObservableObject {
     @Published var isChecking: Bool = false
     @Published var statusMessage: String? = nil
 
-    let currentVersion = "v1.4.0"
+    let currentVersion = "v2.0.0"
 
     func checkForUpdates(silent: Bool = true) {
         guard !isChecking else { return }
@@ -1282,12 +1282,13 @@ final class BatteryModel: ObservableObject {
                 self?.checkCalendarOutings()
             }
         }
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
+        // Fallback coalesced safety timer: hardware changes trigger instantly via IOPSNotificationCreateRunLoopSource below
+        let fallbackTimer = Timer(timeInterval: 30, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.refresh() }
         }
-        if let timer = refreshTimer {
-            RunLoop.main.add(timer, forMode: .common)
-        }
+        fallbackTimer.tolerance = 5.0
+        RunLoop.main.add(fallbackTimer, forMode: .common)
+        refreshTimer = fallbackTimer
 
         // Hardware IOKit power source notification: instant refresh on any charge/level change
         let loopSource = IOPSNotificationCreateRunLoopSource({ context in
@@ -1379,7 +1380,7 @@ final class BatteryModel: ObservableObject {
         ================================================================================
         Mac 電池健康度與硬體深度診斷報告 (Battery Diagnostic Report)
         產生時間：\(dateStr)
-        開發者：Matt · Battery Logger v1.40
+        開發者：Matt · Battery Logger v2.0.0
         ================================================================================
 
         【一、 系統與硬體資訊】
@@ -2119,12 +2120,12 @@ final class BatteryModel: ObservableObject {
     func handleSleepWake() {
         isSystemSleeping = false
         if refreshTimer == nil {
-            refreshTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
+            let timer = Timer(timeInterval: 30, repeats: true) { [weak self] _ in
                 Task { @MainActor in self?.refresh() }
             }
-            if let timer = refreshTimer {
-                RunLoop.main.add(timer, forMode: .common)
-            }
+            timer.tolerance = 5.0
+            RunLoop.main.add(timer, forMode: .common)
+            refreshTimer = timer
         }
         let wakeTime = Date()
         let storedTs = UserDefaults.standard.double(forKey: "last_sleep_timestamp")
@@ -3337,7 +3338,7 @@ struct DashboardView: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text("Mac 電池耗電記錄器").font(.title2.bold())
-                    Text("v1.40")
+                    Text("v2.0.0")
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .foregroundStyle(Color.blue)
                         .padding(.horizontal, 6)
@@ -3438,7 +3439,7 @@ struct DashboardView: View {
             InfoCard(title: "系統硬體規格", icon: "desktopcomputer", rows: [
                 ("型號", model.snapshot.model), ("處理器", model.snapshot.processor),
                 ("記憶體", model.snapshot.memory), ("macOS", "\(model.snapshot.macOS) (\(model.snapshot.build))"),
-                ("App 版本", "v1.40 (Build 40) · 開發者：Matt"),
+                ("App 版本", "v2.0.0 (Build 50) · 開發者：Matt"),
                 ("本次開機", model.snapshot.uptime)
             ])
             InfoCard(
@@ -3559,6 +3560,8 @@ struct DashboardView: View {
             }
             .padding(10)
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("目前電量 \(model.snapshot.percent ?? 0)%，健康度 \(model.snapshot.healthPercent.map { String(format: "%.1f%%", $0) } ?? "未知")，循環次數 \(model.snapshot.cycles ?? 0) 次")
     }
 
     // MARK: - Tab 2: 🧠 智能守護與 AI
@@ -3844,6 +3847,8 @@ struct DashboardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14).background(.quaternary.opacity(0.55), in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title)：\(value)")
     }
 }
 
@@ -6045,7 +6050,7 @@ struct MenuBarPanel: View {
                         .foregroundStyle(Color.accentColor)
                     Text("Battery Logger")
                         .font(.system(size: 13, weight: .bold))
-                    Text("v1.40")
+                    Text("v2.0.0")
                         .font(.system(size: 9.5, weight: .bold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 5)
@@ -6523,7 +6528,7 @@ struct PreferencesSheet: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("目前版本：v1.40 (Build 40) · \(model.isAppleSilicon ? "Apple Silicon (ARM64)" : "Intel (x86_64)")")
+                        Text("目前版本：v2.0.0 (Build 50) · \(model.isAppleSilicon ? "Apple Silicon (ARM64)" : "Intel (x86_64)")")
                             .font(.subheadline.bold())
                         if let msg = UpdateChecker.shared.statusMessage {
                             Text(msg)

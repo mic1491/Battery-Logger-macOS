@@ -50,13 +50,17 @@
 ## 📦 Quick Install / 快速下載安裝
 
 ### 方式一：直接下載發布版本（推薦）
-1. 至 [Releases 頁面](https://github.com/mic1491/Battery-Logger-macOS/releases/latest) 下載 `Battery_Logger_macOS.zip`。
-2. 解壓縮後將 `Battery Logger.app` 拖移至「應用程式」（`/Applications`）資料夾。
+1. 前往 [Releases 頁面](https://github.com/mic1491/Battery-Logger-macOS/releases/latest) 下載：
+   - 📀 **`Battery_Logger_macOS_v2.0.0.dmg`**（推薦：Apple 原生磁碟映像檔，內建拖移捷徑與一鍵解除隔離工具）
+   - 📦 **`Battery_Logger_macOS.zip`**（免掛載可攜式壓縮包）
+2. 打開 DMG 將 `Battery Logger.app` 拖移至「應用程式」（`/Applications`）資料夾。
 3. **⚠️ 解決 macOS「已損毀」或「無法打開」提示（Gatekeeper 隔離屬性）**：  
-   由於本專案為獨立開源軟體，未購買 Apple 年費開發者憑證。若首次開啟時 macOS 提示無法打開，請開啟「終端機」（Terminal）執行此指令即可一鍵解除阻擋：
-   ```bash
-   xattr -cr "/Applications/Battery Logger.app"
-   ```
+   由於本專案為個人開源軟體，未購買 Apple 年費開發者憑證。  
+   - **DMG 使用者**：雙擊映像檔內的 **「一鍵解除 Gatekeeper 隔離」** 工具即可一秒解鎖！  
+   - **或開啟終端機（Terminal）執行**：
+     ```bash
+     xattr -cr "/Applications/Battery Logger.app"
+     ```
 
 ---
 

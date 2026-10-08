@@ -45,8 +45,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleSupportedPlatforms</key><array><string>MacOSX</string></array>
-<key>CFBundleShortVersionString</key><string>1.40</string>
-<key>CFBundleVersion</key><string>40</string>
+<key>CFBundleShortVersionString</key><string>2.0.0</string>
+<key>CFBundleVersion</key><string>50</string>
 <key>NSHumanReadableCopyright</key><string>Copyright © 2026 Matt. All rights reserved.</string>
 <key>CFBundleIconFile</key><string>applet</string>
 <key>NSPrincipalClass</key><string>NSApplication</string>
@@ -77,8 +77,8 @@ cat > "$WIDGET/Contents/Info.plist" <<'WIDGET_PLIST'
 <key>CFBundleName</key><string>Battery Logger Widget</string>
 <key>CFBundlePackageType</key><string>XPC!</string>
 <key>CFBundleSupportedPlatforms</key><array><string>MacOSX</string></array>
-<key>CFBundleShortVersionString</key><string>1.40</string>
-<key>CFBundleVersion</key><string>40</string>
+<key>CFBundleShortVersionString</key><string>2.0.0</string>
+<key>CFBundleVersion</key><string>50</string>
 <key>LSMinimumSystemVersion</key><string>14.0</string>
 <key>NSExtension</key><dict>
 <key>NSExtensionPointIdentifier</key><string>com.apple.widgetkit-extension</string>

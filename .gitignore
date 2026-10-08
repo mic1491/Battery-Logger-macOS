@@ -2,6 +2,7 @@
 *.o
 *.app
 *.zip
+*.dmg
 *.log
 build/
 DerivedData/

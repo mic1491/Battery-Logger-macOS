@@ -62,8 +62,8 @@ jobs:
           <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
           <key>CFBundlePackageType</key><string>APPL</string>
           <key>CFBundleSupportedPlatforms</key><array><string>MacOSX</string></array>
-          <key>CFBundleShortVersionString</key><string>1.40</string>
-          <key>CFBundleVersion</key><string>40</string>
+          <key>CFBundleShortVersionString</key><string>2.0.0</string>
+          <key>CFBundleVersion</key><string>50</string>
           <key>NSHumanReadableCopyright</key><string>Copyright © 2026 Matt. All rights reserved.</string>
           <key>CFBundleIconFile</key><string>applet</string>
           <key>NSPrincipalClass</key><string>NSApplication</string>
@@ -96,8 +96,8 @@ jobs:
           <key>CFBundleName</key><string>Battery Logger Widget</string>
           <key>CFBundlePackageType</key><string>XPC!</string>
           <key>CFBundleSupportedPlatforms</key><array><string>MacOSX</string></array>
-          <key>CFBundleShortVersionString</key><string>1.40</string>
-          <key>CFBundleVersion</key><string>40</string>
+          <key>CFBundleShortVersionString</key><string>2.0.0</string>
+          <key>CFBundleVersion</key><string>50</string>
           <key>LSMinimumSystemVersion</key><string>14.0</string>
           <key>NSExtension</key><dict>
           <key>NSExtensionPointIdentifier</key><string>com.apple.widgetkit-extension</string>
@@ -123,10 +123,15 @@ jobs:
           echo "Archiving to Battery_Logger_macOS.zip..."
           ditto -c -k --keepParent "$APP" "Battery_Logger_macOS.zip"
 
+          echo "Packaging DMG installer..."
+          ./Package\ DMG.command
+
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: Battery_Logger_macOS.zip
+          files: |
+            Battery_Logger_macOS_v2.0.0.dmg
+            Battery_Logger_macOS.zip
           draft: false
           prerelease: false
