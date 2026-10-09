@@ -34,8 +34,9 @@ jobs:
           lipo -create "$BUILD_CACHE/x86_64/smc-battery-tool" "$BUILD_CACHE/arm64/smc-battery-tool" -output "$BUILD_CACHE/smc-battery-tool"
 
           echo "Compiling main application..."
-          xcrun swiftc -parse-as-library -O -module-cache-path "$BUILD_CACHE/x86_64" -target x86_64-apple-macosx13.0 -framework SwiftUI -framework AppKit -framework ServiceManagement -framework IOKit -framework Carbon -framework WidgetKit -framework UserNotifications -framework AVFoundation -framework EventKit "BatteryLoggerApp.swift" "$BUILD_CACHE/x86_64/SMCTemperature.o" -o "$BUILD_CACHE/BatteryLogger-x86_64"
-          xcrun swiftc -parse-as-library -O -module-cache-path "$BUILD_CACHE/arm64" -target arm64-apple-macosx13.0 -framework SwiftUI -framework AppKit -framework ServiceManagement -framework IOKit -framework Carbon -framework WidgetKit -framework UserNotifications -framework AVFoundation -framework EventKit "BatteryLoggerApp.swift" "$BUILD_CACHE/arm64/SMCTemperature.o" -o "$BUILD_CACHE/BatteryLogger-arm64"
+          SWIFT_SOURCES=(Sources/App/*.swift Sources/Models/*.swift Sources/Services/*.swift Sources/Views/**/*.swift)
+          xcrun swiftc -parse-as-library -O -module-cache-path "$BUILD_CACHE/x86_64" -target x86_64-apple-macosx13.0 -framework SwiftUI -framework AppKit -framework ServiceManagement -framework IOKit -framework Carbon -framework WidgetKit -framework UserNotifications -framework AVFoundation -framework EventKit "${SWIFT_SOURCES[@]}" "$BUILD_CACHE/x86_64/SMCTemperature.o" -o "$BUILD_CACHE/BatteryLogger-x86_64"
+          xcrun swiftc -parse-as-library -O -module-cache-path "$BUILD_CACHE/arm64" -target arm64-apple-macosx13.0 -framework SwiftUI -framework AppKit -framework ServiceManagement -framework IOKit -framework Carbon -framework WidgetKit -framework UserNotifications -framework AVFoundation -framework EventKit "${SWIFT_SOURCES[@]}" "$BUILD_CACHE/arm64/SMCTemperature.o" -o "$BUILD_CACHE/BatteryLogger-arm64"
           lipo -create "$BUILD_CACHE/BatteryLogger-x86_64" "$BUILD_CACHE/BatteryLogger-arm64" -output "$BUILD_CACHE/BatteryLogger"
 
           echo "Compiling WidgetKit extension..."
