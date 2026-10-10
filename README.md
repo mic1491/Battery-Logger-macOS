@@ -20,9 +20,10 @@
 
 ## 📥 下載最新版 / Download Latest Release
 
-👉 **[前往 Releases 頁面下載最新版 DMG 安裝檔 (v2.0.0)](https://github.com/mic1491/Battery-Logger-macOS/releases/latest)**
+* 🚀 **[點此直接下載 Battery_Logger_macOS_v2.0.0.dmg (Direct Download)](https://github.com/mic1491/Battery-Logger-macOS/raw/main/Battery_Logger_macOS_v2.0.0.dmg)**
+* 📦 **備用連結：[前往 Releases 頁面下載最新版](https://github.com/mic1491/Battery-Logger-macOS/releases/latest)**
 
-* 📀 **`Battery_Logger_macOS_v2.0.0.dmg`**（推薦：Apple 原生磁碟映像檔，內建一鍵解除隔離工具）
+> 💡 **安裝說明**：下載完成後雙擊開啟 `.dmg` 檔案，將 **Battery Logger.app** 拖曳至 **Applications (應用程式)** 資料夾即可使用。若首次開啟遇到 macOS 守門員安全性阻擋，可直接雙擊 `.dmg` 內附的 `一鍵解除隔離 (Fix Gatekeeper).command` 執行。
 
 ---
 
