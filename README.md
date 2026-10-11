@@ -12,7 +12,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-macOS%2013%2B-blue?style=flat-square&logo=apple" alt="Platform"/>
   <img src="https://img.shields.io/badge/Architecture-Universal%202%20(Apple%20Silicon%20%2B%20Intel)-success?style=flat-square" alt="Architecture"/>
-  <img src="https://img.shields.io/badge/Version-v2.0.0-purple?style=flat-square" alt="Version"/>
+  <img src="https://img.shields.io/badge/Version-v2.0.1-purple?style=flat-square" alt="Version"/>
   <img src="https://img.shields.io/badge/License-Proprietary-red?style=flat-square" alt="License"/>
 </p>
 
@@ -20,9 +20,11 @@
 
 ## 📥 下載最新版 / Download Latest Release
 
-* 🚀 **[點此直接下載 Battery_Logger_macOS_v2.0.0.dmg (Direct Download)](https://github.com/mic1491/Battery-Logger-macOS/raw/main/Battery_Logger_macOS_v2.0.0.dmg)**
+* 🚀 **[點此直接下載 Battery_Logger_macOS_v2.0.1.dmg (Direct Download)](https://github.com/mic1491/Battery-Logger-macOS/raw/main/Battery_Logger_macOS_v2.0.1.dmg)**
 * 📦 **備用連結：[前往 Releases 頁面下載最新版](https://github.com/mic1491/Battery-Logger-macOS/releases/latest)**
 
+> 💡 **v2.0.1 新增特色**：內建「極致深度睡眠模式 (Extreme Deep Sleep)」，智慧診斷並阻斷休眠期間 DarkWake 網路封包偷電，使闔蓋整夜掉電從 10% 暴跌至 1~2%！
+>
 > 💡 **安裝說明**：下載完成後雙擊開啟 `.dmg` 檔案，將 **Battery Logger.app** 拖曳至 **Applications (應用程式)** 資料夾即可使用。若首次開啟遇到 macOS 守門員安全性阻擋，可直接雙擊 `.dmg` 內附的 `一鍵解除隔離 (Fix Gatekeeper).command` 執行。
 
 ---
